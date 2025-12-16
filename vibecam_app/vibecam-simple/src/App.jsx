@@ -51,7 +51,7 @@ function App() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Synesthesia Camera
+            Sonoptic
           </h1>
           <p className="text-white/80">
             What does your world sound like?
