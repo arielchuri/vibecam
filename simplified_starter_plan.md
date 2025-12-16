@@ -879,7 +879,22 @@ This runs your site with Netlify Functions working locally at `http://localhost:
 
 ### Option B: GitHub Integration (RECOMMENDED - Required for Netlify Functions)
 
-1. **Create a GitHub repository** and push your code:
+1. **Create a GitHub repository**:
+
+   **Option A - Using GitHub CLI (fastest)**:
+   ```bash
+   gh repo create vibecam --public --source=. --remote=origin --push
+   ```
+
+   **Option B - Via GitHub Website**:
+   - Go to https://github.com/new
+   - Repository name: `vibecam`
+   - Description: "AI-powered synesthesia camera"
+   - Make it **Public** (for portfolio)
+   - **Don't** initialize with README (you already have one)
+   - Click "Create repository"
+
+2. **Push your code**:
    ```bash
    git init
    git add .
@@ -901,18 +916,18 @@ This runs your site with Netlify Functions working locally at `http://localhost:
    └── .gitignore
    ```
 
-2. **Go to Netlify** (https://app.netlify.com)
+3. **Go to Netlify** (https://app.netlify.com)
    - Click "Add new site" → "Import an existing project"
    - Choose "GitHub" and authorize Netlify
    - Select your `vibecam` repository
 
-3. **Configure build settings**:
+4. **Configure build settings**:
    - Base directory: `vibecam_app/vibecam-simple` (should auto-detect from netlify.toml)
    - Build command: `npm run build`
    - Publish directory: `dist`
    - Functions directory: `netlify/functions` (should auto-detect from netlify.toml)
 
-4. **Add Environment Variables**:
+5. **Add Environment Variables**:
    - Go to "Site settings" → "Environment variables"
    - Add new variable:
      - Key: `GOOGLE_API_KEY`
@@ -923,12 +938,12 @@ This runs your site with Netlify Functions working locally at `http://localhost:
    - The API key stays server-side (secure!)
    - If you're using Mubert later, add `MUBERT_LICENSE` as well
 
-5. **Deploy**:
+6. **Deploy**:
    - Click "Deploy site"
    - Netlify will build and deploy automatically
    - Get your live URL: `your-app.netlify.app`
 
-6. **Test your deployment**:
+7. **Test your deployment**:
    - Visit your site URL
    - Try uploading an image
    - Check the browser console for any errors
