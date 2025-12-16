@@ -1,0 +1,29 @@
+# Environment variables (contains API keys)
+vibecam_app/vibecam-simple/.env
+
+# Node modules
+vibecam_app/vibecam-simple/node_modules/
+
+# Build output
+vibecam_app/vibecam-simple/dist/
+
+# Local Netlify folder
+vibecam_app/vibecam-simple/.netlify/
+.netlify
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
