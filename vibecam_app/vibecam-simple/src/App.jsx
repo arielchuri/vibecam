@@ -7,6 +7,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [stream, setStream] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -23,6 +24,7 @@ function App() {
   const startCamera = async () => {
     setError(null);
     setResult(null);
+    setCapturedImage(null);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
@@ -67,6 +69,7 @@ function App() {
 
     // Convert to base64 (JPEG at 0.7 quality)
     const base64Image = canvas.toDataURL('image/jpeg', 0.7);
+    setCapturedImage(base64Image);
     
     // Stop camera to save power during analysis
     stopCamera();
@@ -92,14 +95,14 @@ function App() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-1000 flex flex-col items-center justify-center p-4 font-sans"
+      className="min-h-screen transition-colors duration-1000 flex flex-col items-center justify-center p-4 font-sans text-white"
       style={{ backgroundColor }}
     >
       <div className="max-w-md w-full flex flex-col items-center">
         {/* Header */}
         {!isCameraActive && !result && !isAnalyzing && (
           <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-5xl font-black text-white mb-3 tracking-tighter">
+            <h1 className="text-5xl font-black mb-3 tracking-tighter">
               Sonoptic
             </h1>
             <p className="text-white/70 text-lg font-medium">
@@ -122,13 +125,22 @@ function App() {
           {/* Analysis Result or Placeholder */}
           {!isCameraActive && (
             <div className="w-full h-full flex items-center justify-center relative">
+              {/* Captured Photo Background */}
+              {capturedImage && (
+                <img 
+                  src={capturedImage} 
+                  alt="Captured vibe" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+              )}
+
               {isAnalyzing ? (
-                <div className="flex flex-col items-center animate-pulse">
+                <div className="flex flex-col items-center animate-pulse z-10">
                   <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
-                  <p className="text-white font-medium tracking-wide">Synthesizing vibes...</p>
+                  <p className="font-medium tracking-wide">Synthesizing vibes...</p>
                 </div>
               ) : result ? (
-                <div className="absolute inset-0 flex flex-col p-8 text-white animate-fade-in overflow-y-auto">
+                <div className="absolute inset-0 flex flex-col p-8 bg-black/30 backdrop-blur-[2px] animate-fade-in overflow-y-auto z-10">
                    <div className="mt-auto space-y-6">
                     <div>
                       <h2 className="text-[0.65rem] uppercase tracking-[0.2em] text-white/50 font-bold mb-2">The Mood</h2>
