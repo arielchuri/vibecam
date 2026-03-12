@@ -1,22 +1,31 @@
 import { useState, useRef, useEffect } from 'react';
 import { analyzeImage } from './utils/analyzeImage';
+import { generateMusic } from './utils/generateMusic';
 
 function App() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [stream, setStream] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const audioRef = useRef(null);
 
   // Clean up camera stream when component unmounts
   useEffect(() => {
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, [stream]);
@@ -25,6 +34,12 @@ function App() {
     setError(null);
     setResult(null);
     setCapturedImage(null);
+    setAudioUrl(null);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
@@ -53,6 +68,17 @@ function App() {
     setIsCameraActive(false);
   };
 
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -60,20 +86,14 @@ function App() {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    // Set canvas dimensions to match video stream
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // Draw current frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert to base64 (JPEG at 0.7 quality)
     const base64Image = canvas.toDataURL('image/jpeg', 0.7);
     setCapturedImage(base64Image);
     
-    // Stop camera to save power during analysis
     stopCamera();
-    
     setIsAnalyzing(true);
     setError(null);
 
@@ -81,13 +101,28 @@ function App() {
       const analysis = await analyzeImage(base64Image);
       if (analysis.success) {
         setResult(analysis.data);
+        setIsAnalyzing(false);
+        
+        // Generate music based on the analysis
+        setIsGeneratingMusic(true);
+        const music = await generateMusic(analysis.data);
+        
+        if (music.success) {
+          setAudioUrl(music.audioUrl);
+          const audio = new Audio(music.audioUrl);
+          audio.loop = true;
+          audioRef.current = audio;
+          // Note: Autoplay is often blocked, so we'll let the user play it
+        }
       } else {
         setError(analysis.error);
+        setIsAnalyzing(false);
       }
     } catch (err) {
       setError(err.message);
-    } finally {
       setIsAnalyzing(false);
+    } finally {
+      setIsGeneratingMusic(false);
     }
   };
 
@@ -100,7 +135,7 @@ function App() {
     >
       <div className="max-w-md w-full flex flex-col items-center">
         {/* Header */}
-        {!isCameraActive && !result && !isAnalyzing && (
+        {!isCameraActive && !result && !isAnalyzing && !isGeneratingMusic && (
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-5xl font-black mb-3 tracking-tighter">
               Sonoptic
@@ -134,10 +169,12 @@ function App() {
                 />
               )}
 
-              {isAnalyzing ? (
-                <div className="flex flex-col items-center animate-pulse z-10">
+              {(isAnalyzing || isGeneratingMusic) ? (
+                <div className="flex flex-col items-center animate-pulse z-10 bg-black/20 p-6 rounded-2xl backdrop-blur-sm">
                   <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
-                  <p className="font-medium tracking-wide">Synthesizing vibes...</p>
+                  <p className="font-medium tracking-wide">
+                    {isAnalyzing ? "Synthesizing vibes..." : "Composing soundtrack..."}
+                  </p>
                 </div>
               ) : result ? (
                 <div className="absolute inset-0 flex flex-col p-8 bg-black/30 backdrop-blur-[2px] animate-fade-in overflow-y-auto z-10">
@@ -160,9 +197,23 @@ function App() {
                       ))}
                     </div>
 
-                    <div className="flex items-center gap-4 pt-4 border-t border-white/10">
-                       <div className="w-10 h-10 rounded-full border border-white/20 shadow-inner" style={{ backgroundColor: result.hexColor }} />
-                       <span className="font-mono text-xs text-white/60 tracking-widest uppercase">{result.hexColor}</span>
+                    <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
+                       {audioUrl && (
+                         <button 
+                           onClick={toggleAudio}
+                           className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 py-3 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-95"
+                         >
+                           <span className="text-xl">{isPlaying ? "⏸️" : "▶️"}</span>
+                           <span className="font-bold uppercase tracking-widest text-xs">
+                             {isPlaying ? "Pause Soundtrack" : "Play Soundtrack"}
+                           </span>
+                         </button>
+                       )}
+                       
+                       <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-full border border-white/20 shadow-inner" style={{ backgroundColor: result.hexColor }} />
+                         <span className="font-mono text-xs text-white/60 tracking-widest uppercase">{result.hexColor}</span>
+                       </div>
                     </div>
                   </div>
                 </div>

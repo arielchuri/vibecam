@@ -35,14 +35,14 @@ Analyze this image and return ONLY a valid JSON object (no markdown, no explanat
   "mood": "2-3 sentence poetic description of the emotional atmosphere",
   "hexColor": "#RRGGBB",
   "soundscape": "1-2 sentence description of what this scene would sound like",
-  "vibes": ["vibe1", "vibe2", "vibe3"]
+  "vibes": ["vibe1", "vibe2", "vibe3"],
+  "soundQuery": "3-5 keyword search phrase for an ambient background sound"
 }
 
 Rules:
-- Use evocative words like "melancholic," "ethereal," "gritty," "nostalgic," "serene," "chaotic"
 - hexColor should be the EMOTIONAL dominant color, not pixel average
-- soundscape describes the imagined sonic atmosphere
-- vibes should be 3-5 descriptive mood words`;
+- soundQuery should be optimized for a sound effects database (e.g., "ambient forest rain", "industrial factory drone", "ethereal space texture", "busy city cafe chatter")
+- Always include the word "ambient" or "loop" or "texture" in the soundQuery to ensure it's a background sound.`;
 
   const requestBody = {
     contents: [
